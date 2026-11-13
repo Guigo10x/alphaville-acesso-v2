@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.supabase.co; img-src 'self' data:; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'none'">
+<title>Alphaville Acesso v2</title>
+<link rel="icon" href="data:,">
+<style>
+  :root{--p:#1B5E20;--p2:#2E7D32;--bg:#f4f6f5;--card:#fff;--b:#d8e0da;--t:#1f2937;--ts:#64748b;--ok:#15803d;--er:#b91c1c}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--t)}
+  header{background:linear-gradient(135deg,#0d3d12,var(--p));color:#fff;padding:12px 14px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50}
+  header h1{font-size:1rem;margin:0;flex:1}
+  header small{opacity:.85}
+  button{font:inherit;cursor:pointer}
+  .btn{border:0;border-radius:12px;padding:11px 14px;font-weight:700;background:var(--p);color:#fff}
+  .btn.sec{background:#e8f0ea;color:var(--p)}
+  .btn.perigo{background:#fde8e8;color:var(--er)}
+  .btn.hdr{background:rgba(255,255,255,.18);color:#fff;padding:8px 10px;font-size:.85rem}
+  nav{display:flex;gap:6px;padding:10px;overflow-x:auto;background:#fff;border-bottom:1px solid var(--b);position:sticky;top:56px;z-index:40}
+  nav button{border:1px solid var(--b);background:#fff;border-radius:999px;padding:8px 14px;white-space:nowrap;color:var(--t);font-weight:600}
+  nav button.on{background:var(--p);border-color:var(--p);color:#fff}
+  main{padding:12px;max-width:760px;margin:0 auto}
+  .card{background:var(--card);border:1px solid var(--b);border-radius:14px;padding:12px;margin-bottom:10px}
+  .card h3{margin:0 0 4px;font-size:1rem}
+  .meta{font-size:.85rem;color:var(--ts);line-height:1.5}
+  .tag{display:inline-block;font-size:.72rem;font-weight:800;padding:2px 8px;border-radius:999px;background:#e8f0ea;color:var(--p);margin-left:4px}
+  .tag.r{background:#fde8e8;color:var(--er)}
+  .tag.a{background:#fff4e5;color:#9a3412}
+  .acoes{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .acoes button{border:1px solid var(--b);background:#fff;border-radius:10px;padding:7px 10px;font-weight:600;font-size:.85rem}
+  input,select,textarea{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:10px;font:inherit;background:#fff}
+  label{display:block;font-size:.75rem;font-weight:800;color:var(--ts);text-transform:uppercase;margin:10px 0 4px}
+  .row{display:flex;gap:8px}.row>*{flex:1;min-width:0}
+  .msg{min-height:20px;font-size:.9rem;margin-top:8px}
+  .msg.er{color:var(--er)}.msg.ok{color:var(--ok)}
+  .sec-t{font-size:.8rem;font-weight:800;color:var(--ts);text-transform:uppercase;margin:14px 2px 6px}
+  .vazio{text-align:center;color:var(--ts);padding:24px 8px}
+  #login{max-width:360px;margin:60px auto;background:#fff;border:1px solid var(--b);border-radius:18px;padding:22px}
+  #login h2{margin:0 0 4px;color:var(--p)}
+  .modal{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:flex-start;justify-content:center;padding:16px;overflow:auto;z-index:100}
+  .modal.on{display:flex}
+  .modal .box{background:#fff;border-radius:16px;padding:16px;width:100%;max-width:560px;margin-top:24px}
+  .hide{display:none!important}
+</style>
+</head>
+<body>
+
+<!-- ============ CONFIGURAÇÃO: troque pelos dados do PROJETO NOVO ============ -->
+<script>
+  window.CFG = {
+    url: "https://oxpcsjnvvzskutrcmige.supabase.co/rest/v1/",
+    key: "sb_publishable_fsFXl-LFOWdDElb-0usidw_ZdLxZdKA"
+  };
+</script>
+
+<div id="login" class="hide">
+  <h2>Alphaville Acesso</h2>
+  <div class="meta">Entre com seu e-mail e senha.</div>
+  <label>E-mail</label><input id="l-email" type="email" autocomplete="username">
+  <label>Senha</label><input id="l-senha" type="password" autocomplete="current-password">
+  <div id="l-msg" class="msg er"></div>
+  <button class="btn" style="width:100%;margin-top:6px" id="l-ok">Entrar</button>
+</div>
+
+<div id="app" class="hide">
+  <header>
+    <div style="flex:1;min-width:0">
+      <h1>Alphaville Acesso</h1>
+      <small id="h-user"></small>
+    </div>
+    <button class="btn hdr" id="h-sair">Sair</button>
+  </header>
+  <nav id="tabs">
+    <button data-aba="cadastros" class="on">Cadastros</button>
+    <button data-aba="moradores">Moradores</button>
+    <button data-aba="acessos">Acessos</button>
+    <button data-aba="equipe">Equipe</button>
+  </nav>
+  <main>
+    <!-- CADASTROS -->
+    <section id="aba-cadastros">
+      <div class="card">
+        <label>Buscar (nome ou CPF)</label><input id="c-busca" placeholder="Digite para buscar">
+        <div class="row" style="margin-top:8px">
+          <select id="c-tipo"><option value="">Todos os tipos</option><option value="visitante">Visitantes</option><option value="prestador">Prestadores</option></select>
+          <select id="c-lixeira"><option value="0">Ativos</option><option value="1">Excluídos (lixeira)</option></select>
+        </div>
+      </div>
+      <div class="acoes" style="margin:0 0 10px"><button class="btn" id="c-novo">+ Novo cadastro</button></div>
+      <div id="c-lista"></div>
+    </section>
+
+    <!-- MORADORES -->
+    <section id="aba-moradores" class="hide">
+      <div class="card"><label>Buscar (nome, QD, LT, rua)</label><input id="m-busca" placeholder="Digite para buscar"></div>
+      <div class="acoes" style="margin:0 0 10px"><button class="btn" id="m-novo">+ Nova residência</button></div>
+      <div id="m-lista"></div>
+    </section>
+
+    <!-- ACESSOS -->
+    <section id="aba-acessos" class="hide">
+      <div class="card">
+        <label>1. Pessoa</label>
+        <input id="a-busca" placeholder="Digite o nome ou CPF"><div id="a-pessoas" style="margin-top:6px"></div>
+        <div id="a-escolhida" class="meta" style="margin-top:6px"></div>
+        <label>2. Residência de destino (obrigatório na entrada)</label>
+        <input id="a-res-busca" placeholder="QD, LT ou rua"><div id="a-residencias" style="margin-top:6px"></div>
+        <div id="a-res-escolhida" class="meta" style="margin-top:6px"></div>
+        <div class="row" style="margin-top:12px">
+          <button class="btn" id="a-entrada">Registrar ENTRADA</button>
+          <button class="btn perigo" id="a-saida">Registrar SAÍDA</button>
+        </div>
+        <div id="a-msg" class="msg"></div>
+      </div>
+      <div class="sec-t">Últimos acessos</div>
+      <div id="a-lista"></div>
+    </section>
+
+    <!-- EQUIPE -->
+    <section id="aba-equipe" class="hide">
+      <div class="card">
+        <div class="sec-t" style="margin-top:0">Quem tem acesso ao app</div>
+        <div id="e-lista"></div>
+      </div>
+      <div class="card" id="e-novo-card">
+        <div class="sec-t" style="margin-top:0">Criar acesso</div>
+        <div class="meta">A pessoa precisa estar cadastrada como prestador antes.</div>
+        <label>Nome</label><input id="e-nome">
+        <label>CPF</label><input id="e-cpf" inputmode="numeric">
+        <label>E-mail de acesso</label><input id="e-email" type="email" autocomplete="off">
+        <label>Senha provisória (mín. 8)</label><input id="e-senha" autocomplete="new-password">
+        <label>Papel</label>
+        <select id="e-papel"><option value="operador">Operador</option><option value="administrador">Administrador (só o criador)</option></select>
+        <button class="btn" style="margin-top:12px" id="e-criar">Criar acesso</button>
+        <div id="e-msg" class="msg"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- MODAL: CADASTRO DE PESSOA -->
+<div class="modal" id="m-pessoa"><div class="box">
+  <div class="row"><h3 style="flex:1;margin:0" id="mp-titulo">Cadastro</h3><button class="btn sec" data-fechar="m-pessoa">Fechar</button></div>
+  <input type="hidden" id="mp-id">
+  <label>Tipo</label><select id="mp-tipo"><option value="visitante">Visitante</option><option value="prestador">Prestador</option></select>
+  <label>Nome</label><input id="mp-nome">
+  <label>CPF</label><input id="mp-cpf" inputmode="numeric">
+  <label>Telefone</label><input id="mp-tel">
+  <div class="row"><div><label>Placa</label><input id="mp-placa"></div><div><label>Veículo</label><input id="mp-veic"></div></div>
+  <label>Serviço (prestador)</label><input id="mp-serv">
+  <label>Observação</label><textarea id="mp-obs" rows="2"></textarea>
+  <button class="btn" style="width:100%;margin-top:12px" id="mp-salvar">Salvar</button>
+  <div id="mp-msg" class="msg"></div>
+</div></div>
+
+<!-- MODAL: RESIDÊNCIA -->
+<div class="modal" id="m-residencia"><div class="box">
+  <div class="row"><h3 style="flex:1;margin:0" id="mr-titulo">Residência</h3><button class="btn sec" data-fechar="m-residencia">Fechar</button></div>
+  <input type="hidden" id="mr-id">
+  <div class="row"><div><label>Portaria</label><select id="mr-port"><option>Parati</option><option>Iguacu</option><option>Andorinhas</option><option>Araucarias</option></select></div>
+    <div><label>QD</label><input id="mr-qd"></div><div><label>LT</label><input id="mr-lt"></div></div>
+  <label>Rua e número</label><input id="mr-end">
+  <label>Titular 1</label><input id="mr-t1"><div class="row"><div><label>Telefone 1</label><input id="mr-tel1"></div></div>
+  <label>Titular 2</label><input id="mr-t2"><div class="row"><div><label>Telefone 2</label><input id="mr-tel2"></div></div>
+  <label>Telefone fixo da residência</label><input id="mr-fixo">
+  <label><input type="checkbox" id="mr-loc" style="width:auto"> Esta residência tem LOCATÁRIO</label>
+  <div id="mr-dono-box" class="hide">
+    <label>Dono da residência (buscar)</label>
+    <input id="mr-dono-busca" placeholder="QD, LT ou nome">
+    <div id="mr-dono-lista" style="margin-top:6px"></div>
+    <div id="mr-dono-escolhido" class="meta" style="margin-top:6px"></div>
+  </div>
+  <button class="btn" style="width:100%;margin-top:12px" id="mr-salvar">Salvar residência</button>
+  <div id="mr-msg" class="msg"></div>
+</div></div>
+
+<script>
+/* =====================================================================
+   ALPHAVILLE ACESSO v2
+   - Tudo é lido e gravado no Supabase. Nada fica guardado no aparelho.
+   - A única coisa guardada é a sessão de login, na aba aberta
+     (sessionStorage): some quando o navegador é fechado.
+   ===================================================================== */
+(function(){
+  "use strict";
+  var SESSAO_KEY="av2_sessao";
+  var S=null, ME=null, D={pessoas:[],residencias:[],acessos:[],perfis:[]};
+  var ABA="cadastros", DONO_SEL=null, A_PESSOA=null, A_RES=null;
+
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+  function soDig(s){ return String(s||"").replace(/\D/g,""); }
+  function fmtCpf(s){ var d=soDig(s); return d.length===11? d.slice(0,3)+"."+d.slice(3,6)+"."+d.slice(6,9)+"-"+d.slice(9):s; }
+  function fmtData(iso){ var d=new Date(iso); return d.toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}); }
+  function msg(id,t,cls){ var e=$(id); if(e){ e.textContent=t; e.className="msg "+(cls||""); } }
+  function podeGerir(){ return ME && (ME.papel==="criador"||ME.papel==="administrador"); }
+  function ehCriador(p){ return !!(p && soDig(p.cpf) && soDig(p.cpf)===soDig(criadorCpf())); }
+  function criadorCpf(){ var c=(D.perfis||[]).find(function(x){return x.papel==="criador";}); return c?c.cpf:""; }
+
+  /* ---------------- sessão ---------------- */
+  function guardarSessao(s){ S=s; try{ sessionStorage.setItem(SESSAO_KEY,JSON.stringify(s)); }catch(e){} }
+  function lerSessao(){ try{ return JSON.parse(sessionStorage.getItem(SESSAO_KEY)||"null"); }catch(e){ return null; } }
+  function sairApp(){ try{ sessionStorage.clear(); }catch(e){} S=null; ME=null; location.reload(); }
+
+  async function renovarSeNecessario(){
+    if(!S) return false;
+    if(S.exp-60000>Date.now()) return true;
+    var r=await fetch(CFG.url+"/auth/v1/token?grant_type=refresh_token",{method:"POST",headers:{apikey:CFG.key,"Content-Type":"application/json"},body:JSON.stringify({refresh_token:S.refresh})});
+    var j={}; try{ j=await r.json(); }catch(e){}
+    if(!r.ok||!j.access_token){ sairApp(); return false; }
+    guardarSessao({token:j.access_token,refresh:j.refresh_token||S.refresh,exp:Date.now()+(j.expires_in||3600)*1000,uid:S.uid});
+    return true;
+  }
+
+  /* ---------------- acesso ao banco ---------------- */
+  async function api(path,opts){
+    opts=opts||{};
+    await renovarSeNecessario();
+    var h={apikey:CFG.key,"Content-Type":"application/json",Authorization:"Bearer "+(S?S.token:CFG.key)};
+    if(opts.prefer) h.Prefer=opts.prefer;
+    var r=await fetch(CFG.url+path,{method:opts.method||"GET",headers:h,body:opts.body?JSON.stringify(opts.body):undefined});
+    var t=""; try{ t=await r.text(); }catch(e){}
+    var j=null; try{ j=t?JSON.parse(t):null; }catch(e){}
+    if(!r.ok){ throw new Error((j&&(j.message||j.msg||j.error_description||j.erro))||("Erro "+r.status)); }
+    return j;
+  }
+  async function entrar(email,senha){
+    var r=await fetch(CFG.url+"/auth/v1/token?grant_type=password",{method:"POST",headers:{apikey:CFG.key,"Content-Type":"application/json"},body:JSON.stringify({email:email,password:senha})});
+    var j={}; try{ j=await r.json(); }catch(e){}
+    if(!r.ok||!j.access_token) throw new Error("E-mail ou senha incorretos.");
+    guardarSessao({token:j.access_token,refresh:j.refresh_token,exp:Date.now()+(j.expires_in||3600)*1000,uid:j.user.id});
+  }
+  async function carregarTudo(){
+    var perfis=await api("/rest/v1/perfis?select=user_id,cpf,nome,papel,ativo");
+    D.perfis=perfis||[];
+    ME=D.perfis.find(function(p){ return p.user_id===S.uid && p.ativo; })||null;
+    if(!ME) throw new Error("Seu acesso não está liberado. Peça ao criador do app.");
+    var r=await Promise.all([
+      api("/rest/v1/pessoas?select=*&order=nome.asc"),
+      api("/rest/v1/residencias?select=*&order=portaria.asc,qd.asc,lt.asc"),
+      api("/rest/v1/acessos?select=*&order=momento.desc&limit=300")
+    ]);
+    D.pessoas=r[0]||[]; D.residencias=r[1]||[]; D.acessos=r[2]||[];
+  }
+
+  /* ---------------- login ---------------- */
+  async function iniciar(){
+    var s=lerSessao();
+    if(s && s.exp){ S=s; }
+    if(!S){ $("login").classList.remove("hide"); return; }
+    try{
+      await carregarTudo();
+      $("login").classList.add("hide"); $("app").classList.remove("hide");
+      $("h-user").textContent=ME.nome+" · "+ME.papel;
+      if(!podeGerir()) $("e-novo-card").classList.add("hide");
+      mostrarAba(ABA); desenharTudo();
+      setInterval(atualizar,20000);
+    }catch(e){
+      sairApp();
+    }
+  }
+  $("l-ok").onclick=async function(){
+    var email=$("l-email").value.trim(), senha=$("l-senha").value;
+    msg("l-msg","Entrando…","");
+    try{
+      await entrar(email,senha);
+      await carregarTudo();
+      location.reload();
+    }catch(e){ msg("l-msg",e.message,"er"); }
+  };
+  $("h-sair").onclick=sairApp;
+
+  async function atualizar(){
+    try{ await carregarTudo(); desenharTudo(); }catch(e){}
+  }
+
+  /* ---------------- abas ---------------- */
+  function mostrarAba(a){
+    ABA=a;
+    ["cadastros","moradores","acessos","equipe"].forEach(function(x){
+      $("aba-"+x).classList.toggle("hide",x!==a);
+    });
+    document.querySelectorAll("#tabs button").forEach(function(b){ b.classList.toggle("on",b.getAttribute("data-aba")===a); });
+  }
+  document.querySelectorAll("#tabs button").forEach(function(b){
+    b.onclick=function(){ mostrarAba(b.getAttribute("data-aba")); desenharTudo(); };
+  });
+  document.querySelectorAll("[data-fechar]").forEach(function(b){
+    b.onclick=function(){ $(b.getAttribute("data-fechar")).classList.remove("on"); };
+  });
+
+  function desenharTudo(){
+    desenharCadastros(); desenharMoradores(); desenharAcessos(); desenharEquipe();
+  }
+
+  /* ---------------- CADASTROS ---------------- */
+  function desenharCadastros(){
+    var q=($("c-busca").value||"").toLowerCase().trim(), qd=soDig(q);
+    var tipo=$("c-tipo").value, lixo=$("c-lixeira").value==="1";
+    var lista=D.pessoas.filter(function(p){
+      if(!!p.ativo===lixo) return false;
+      if(tipo && p.tipo!==tipo) return false;
+      if(q){ return (p.nome||"").toLowerCase().indexOf(q)>=0 || (qd && soDig(p.cpf).indexOf(qd)>=0); }
+      return true;
+    });
+    if(!lista.length){ $("c-lista").innerHTML='<div class="vazio">Nenhum cadastro.</div>'; return; }
+    $("c-lista").innerHTML=lista.map(function(p){
+      var criador=ehCriador(p);
+      var acoes='<button data-act="editar" data-id="'+p.id+'">Editar</button>';
+      if(p.ativo){
+        if(!criador) acoes+='<button data-act="excluir" data-id="'+p.id+'">Excluir</button>';
+      }else{
+        acoes+='<button data-act="restaurar" data-id="'+p.id+'">Restaurar</button>';
+        if(podeGerir()) acoes+='<button class="perigo" data-act="apagar" data-id="'+p.id+'">Apagar de vez</button>';
+      }
+      return '<div class="card"><h3>'+esc(p.nome)+'<span class="tag">'+esc(p.tipo.toUpperCase())+'</span>'+(criador?'<span class="tag">CRIADOR</span>':"")+(p.ativo?"":'<span class="tag r">EXCLUÍDO</span>')+'</h3>'+
+        '<div class="meta">CPF: '+esc(fmtCpf(p.cpf))+(p.telefone?" · Tel: "+esc(p.telefone):"")+'</div>'+
+        (p.placa||p.veiculo?'<div class="meta">Placa: '+esc(p.placa)+' · '+esc(p.veiculo)+'</div>':"")+
+        (p.servico?'<div class="meta">Serviço: '+esc(p.servico)+'</div>':"")+
+        '<div class="acoes">'+acoes+'</div></div>';
+    }).join("");
+  }
+  $("c-busca").oninput=desenharCadastros;
+  $("c-tipo").onchange=desenharCadastros;
+  $("c-lixeira").onchange=desenharCadastros;
+
+  function abrirPessoa(p){
+    $("mp-id").value=p?p.id:"";
+    $("mp-titulo").textContent=p?"Editar cadastro":"Novo cadastro";
+    $("mp-tipo").value=p?p.tipo:"visitante";
+    $("mp-nome").value=p?p.nome:""; $("mp-cpf").value=p?p.cpf:""; $("mp-tel").value=p?p.telefone:"";
+    $("mp-placa").value=p?p.placa:""; $("mp-veic").value=p?p.veiculo:""; $("mp-serv").value=p?p.servico:""; $("mp-obs").value=p?p.obs:"";
+    msg("mp-msg","");
+    $("m-pessoa").classList.add("on");
+  }
+  $("c-novo").onclick=function(){ abrirPessoa(null); };
+  $("mp-salvar").onclick=async function(){
+    var id=$("mp-id").value;
+    var corpo={tipo:$("mp-tipo").value,nome:$("mp-nome").value.trim().toUpperCase(),cpf:soDig($("mp-cpf").value),telefone:$("mp-tel").value.trim(),
+      placa:$("mp-placa").value.trim().toUpperCase(),veiculo:$("mp-veic").value.trim().toUpperCase(),servico:$("mp-serv").value.trim().toUpperCase(),obs:$("mp-obs").value.trim(),
+      atualizado_em:new Date().toISOString()};
+    if(!corpo.nome){ msg("mp-msg","Informe o nome.","er"); return; }
+    if(corpo.cpf && corpo.cpf.length!==11){ msg("mp-msg","CPF incompleto.","er"); return; }
+    try{
+      if(id){ await api("/rest/v1/pessoas?id=eq."+id,{method:"PATCH",body:corpo,prefer:"return=minimal"}); }
+      else{ corpo.criado_por=S.uid; await api("/rest/v1/pessoas",{method:"POST",body:corpo,prefer:"return=minimal"}); }
+      $("m-pessoa").classList.remove("on"); await atualizar();
+    }catch(e){ msg("mp-msg",e.message,"er"); }
+  };
+
+  $("c-lista").onclick=async function(ev){
+    var b=ev.target.closest("button[data-act]"); if(!b) return;
+    var id=b.getAttribute("data-id"), act=b.getAttribute("data-act");
+    var p=D.pessoas.find(function(x){return x.id===id;}); if(!p) return;
+    try{
+      if(act==="editar") abrirPessoa(p);
+      if(act==="excluir"){
+        if(!confirm("Mandar "+p.nome+" para a lixeira?")) return;
+        await api("/rest/v1/pessoas?id=eq."+id,{method:"PATCH",prefer:"return=minimal",body:{ativo:false,excluido_por:S.uid,excluido_em:new Date().toISOString()}});
+      }
+      if(act==="restaurar"){
+        await api("/rest/v1/pessoas?id=eq."+id,{method:"PATCH",prefer:"return=minimal",body:{ativo:true,excluido_por:null,excluido_em:null}});
+      }
+      if(act==="apagar"){
+        if(!confirm("Apagar DE VEZ "+p.nome+"? Não tem volta.")) return;
+        await api("/rest/v1/pessoas?id=eq."+id,{method:"DELETE",prefer:"return=minimal"});
+      }
+      await atualizar();
+    }catch(e){ alert(e.message); }
+  };
+
+  /* ---------------- MORADORES (residências) ---------------- */
+  function nomeRes(r){ return r ? ("QD "+r.qd+" LT "+r.lt+" · "+(r.endereco||"")) : ""; }
+  function desenharMoradores(){
+    var q=($("m-busca").value||"").toLowerCase().trim();
+    var lista=D.residencias.filter(function(r){
+      if(!q) return true;
+      return (r.qd+" "+r.lt+" "+r.endereco+" "+r.titular1+" "+r.titular2+" "+r.portaria).toLowerCase().indexOf(q)>=0;
+    });
+    if(!lista.length){ $("m-lista").innerHTML='<div class="vazio">Nenhuma residência.</div>'; return; }
+    $("m-lista").innerHTML=lista.map(function(r){
+      var dono=r.dono_id?D.residencias.find(function(x){return x.id===r.dono_id;}):null;
+      var acoes='<button data-act="editar" data-id="'+r.id+'">Editar</button>';
+      if(podeGerir()) acoes+='<button class="perigo" data-act="apagar" data-id="'+r.id+'">Apagar</button>';
+      return '<div class="card"><h3>'+esc(r.portaria)+' · QD '+esc(r.qd)+' LT '+esc(r.lt)+(r.locatario?'<span class="tag a">LOCATÁRIO</span>':"")+'</h3>'+
+        '<div class="meta">'+esc(r.endereco)+'</div>'+
+        '<div class="meta">Titular 1: '+esc(r.titular1)+(r.tel1?" · "+esc(r.tel1):"")+'</div>'+
+        (r.titular2?'<div class="meta">Titular 2: '+esc(r.titular2)+(r.tel2?" · "+esc(r.tel2):"")+'</div>':"")+
+        (r.fixo?'<div class="meta">Fixo: '+esc(r.fixo)+'</div>':"")+
+        (dono?'<div class="meta">Dono: '+esc(nomeRes(dono))+'</div>':"")+
+        '<div class="acoes">'+acoes+'</div></div>';
+    }).join("");
+  }
+  $("m-busca").oninput=desenharMoradores;
+
+  var MR_DONO=null;
+  function abrirResidencia(r){
+    $("mr-id").value=r?r.id:"";
+    $("mr-titulo").textContent=r?"Editar residência":"Nova residência";
+    $("mr-port").value=r?r.portaria:"Parati";
+    $("mr-qd").value=r?r.qd:""; $("mr-lt").value=r?r.lt:""; $("mr-end").value=r?r.endereco:"";
+    $("mr-t1").value=r?r.titular1:""; $("mr-tel1").value=r?r.tel1:"";
+    $("mr-t2").value=r?r.titular2:""; $("mr-tel2").value=r?r.tel2:""; $("mr-fixo").value=r?r.fixo:"";
+    $("mr-loc").checked=!!(r&&r.locatario);
+    MR_DONO=r&&r.dono_id?r.dono_id:null;
+    mostrarDono();
+    msg("mr-msg","");
+    $("m-residencia").classList.add("on");
+  }
+  function mostrarDono(){
+    $("mr-dono-box").classList.toggle("hide",!$("mr-loc").checked);
+    var d=MR_DONO?D.residencias.find(function(x){return x.id===MR_DONO;}):null;
+    $("mr-dono-escolhido").textContent=d?("Dono: "+nomeRes(d)):"";
+  }
+  $("mr-loc").onchange=mostrarDono;
+  $("mr-dono-busca").oninput=function(){
+    var q=$("mr-dono-busca").value.toLowerCase().trim(), atual=$("mr-id").value;
+    var lista=q?D.residencias.filter(function(x){ return x.id!==atual && (x.qd+" "+x.lt+" "+x.endereco+" "+x.titular1).toLowerCase().indexOf(q)>=0; }).slice(0,6):[];
+    $("mr-dono-lista").innerHTML=lista.map(function(x){ return '<button class="sec" style="display:block;width:100%;text-align:left;margin-top:4px;border:1px solid #d8e0da;border-radius:10px;padding:8px" data-dono="'+x.id+'">'+esc(nomeRes(x))+'</button>'; }).join("");
+  };
+  $("mr-dono-lista").onclick=function(ev){
+    var b=ev.target.closest("button[data-dono]"); if(!b) return;
+    MR_DONO=b.getAttribute("data-dono"); $("mr-dono-lista").innerHTML=""; $("mr-dono-busca").value=""; mostrarDono();
+  };
+  $("m-novo").onclick=function(){ abrirResidencia(null); };
+  $("mr-salvar").onclick=async function(){
+    var id=$("mr-id").value;
+    var corpo={portaria:$("mr-port").value,qd:$("mr-qd").value.trim().toUpperCase(),lt:$("mr-lt").value.trim().toUpperCase(),
+      endereco:$("mr-end").value.trim().toUpperCase(),titular1:$("mr-t1").value.trim().toUpperCase(),tel1:$("mr-tel1").value.trim(),
+      titular2:$("mr-t2").value.trim().toUpperCase(),tel2:$("mr-tel2").value.trim(),fixo:$("mr-fixo").value.trim(),
+      locatario:$("mr-loc").checked,dono_id:$("mr-loc").checked?MR_DONO:null,atualizado_em:new Date().toISOString()};
+    if(!corpo.qd||!corpo.lt){ msg("mr-msg","Informe QD e LT.","er"); return; }
+    if(corpo.locatario && !corpo.dono_id){ msg("mr-msg","Escolha o dono da residência.","er"); return; }
+    try{
+      if(id){ await api("/rest/v1/residencias?id=eq."+id,{method:"PATCH",body:corpo,prefer:"return=minimal"}); }
+      else{ await api("/rest/v1/residencias",{method:"POST",body:corpo,prefer:"return=minimal"}); }
+      $("m-residencia").classList.remove("on"); await atualizar();
+    }catch(e){ msg("mr-msg",e.message,"er"); }
+  };
+  $("m-lista").onclick=async function(ev){
+    var b=ev.target.closest("button[data-act]"); if(!b) return;
+    var id=b.getAttribute("data-id"), act=b.getAttribute("data-act");
+    var r=D.residencias.find(function(x){return x.id===id;}); if(!r) return;
+    try{
+      if(act==="editar") abrirResidencia(r);
+      if(act==="apagar"){
+        if(!confirm("Apagar a residência "+nomeRes(r)+"? Não tem volta.")) return;
+        await api("/rest/v1/residencias?id=eq."+id,{method:"DELETE",prefer:"return=minimal"});
+        await atualizar();
+      }
+    }catch(e){ alert(e.message); }
+  };
+
+  /* ---------------- ACESSOS ---------------- */
+  function dentroDe(pessoaId){
+    var ult=D.acessos.find(function(a){ return a.pessoa_id===pessoaId; });
+    return !!(ult && ult.movimento==="entrada");
+  }
+  function desenharAcessos(){
+    var q=($("a-busca").value||"").toLowerCase().trim(), qd=soDig(q);
+    var pes=q?D.pessoas.filter(function(p){ return p.ativo && ((p.nome||"").toLowerCase().indexOf(q)>=0 || (qd && soDig(p.cpf).indexOf(qd)>=0)); }).slice(0,8):[];
+    $("a-pessoas").innerHTML=pes.map(function(p){ return '<button class="sec" style="display:block;width:100%;text-align:left;margin-top:4px;border:1px solid #d8e0da;border-radius:10px;padding:8px" data-pessoa="'+p.id+'">'+esc(p.nome)+' · '+esc(p.tipo)+(dentroDe(p.id)?' <span class="tag">DENTRO</span>':"")+'</button>'; }).join("");
+    if(A_PESSOA){ var pe=D.pessoas.find(function(x){return x.id===A_PESSOA;}); $("a-escolhida").textContent=pe?("Escolhida: "+pe.nome+(dentroDe(pe.id)?" (está dentro)":" (está fora)")):""; }
+    var qr=($("a-res-busca").value||"").toLowerCase().trim();
+    var res=qr?D.residencias.filter(function(r){ return (r.qd+" "+r.lt+" "+r.endereco+" "+r.titular1).toLowerCase().indexOf(qr)>=0; }).slice(0,8):[];
+    $("a-residencias").innerHTML=res.map(function(r){ return '<button class="sec" style="display:block;width:100%;text-align:left;margin-top:4px;border:1px solid #d8e0da;border-radius:10px;padding:8px" data-res="'+r.id+'">'+esc(nomeRes(r))+'</button>'; }).join("");
+    $("a-res-escolhida").textContent=A_RES?("Destino: "+nomeRes(D.residencias.find(function(x){return x.id===A_RES;}))):"";
+    $("a-lista").innerHTML=D.acessos.slice(0,80).map(function(a){
+      var p=D.pessoas.find(function(x){return x.id===a.pessoa_id;});
+      var r=a.residencia_id?D.residencias.find(function(x){return x.id===a.residencia_id;}):null;
+      var op=D.perfis.find(function(x){return x.user_id===a.operador_id;});
+      return '<div class="card"><h3>'+esc(p?p.nome:"(pessoa apagada)")+'<span class="tag '+(a.movimento==="saida"?"r":"")+'">'+(a.movimento==="saida"?"SAÍDA":"ENTRADA")+'</span></h3>'+
+        '<div class="meta">'+esc(fmtData(a.momento))+(r?" · "+esc(nomeRes(r)):"")+(op?" · Operador: "+esc(op.nome):"")+'</div></div>';
+    }).join("")||'<div class="vazio">Nenhum acesso ainda.</div>';
+  }
+  $("a-busca").oninput=desenharAcessos;
+  $("a-res-busca").oninput=desenharAcessos;
+  $("a-pessoas").onclick=function(ev){ var b=ev.target.closest("button[data-pessoa]"); if(!b) return; A_PESSOA=b.getAttribute("data-pessoa"); $("a-busca").value=""; desenharAcessos(); };
+  $("a-residencias").onclick=function(ev){ var b=ev.target.closest("button[data-res]"); if(!b) return; A_RES=b.getAttribute("data-res"); $("a-res-busca").value=""; desenharAcessos(); };
+
+  async function registrar(movimento){
+    if(!A_PESSOA){ msg("a-msg","Escolha a pessoa.","er"); return; }
+    if(movimento==="entrada" && !A_RES){ msg("a-msg","Escolha a residência de destino antes de dar entrada.","er"); return; }
+    if(movimento==="entrada" && dentroDe(A_PESSOA)){ msg("a-msg","Esta pessoa já está dentro. Registre a saída primeiro.","er"); return; }
+    if(movimento==="saida" && !dentroDe(A_PESSOA)){ msg("a-msg","Esta pessoa não está dentro.","er"); return; }
+    try{
+      await api("/rest/v1/acessos",{method:"POST",prefer:"return=minimal",body:{pessoa_id:A_PESSOA,residencia_id:movimento==="entrada"?A_RES:null,movimento:movimento,operador_id:S.uid,momento:new Date().toISOString()}});
+      msg("a-msg",(movimento==="entrada"?"Entrada":"Saída")+" registrada.","ok");
+      A_PESSOA=null; A_RES=null; $("a-busca").value=""; $("a-res-busca").value="";
+      await atualizar();
+    }catch(e){ msg("a-msg",e.message,"er"); }
+  }
+  $("a-entrada").onclick=function(){ registrar("entrada"); };
+  $("a-saida").onclick=function(){ registrar("saida"); };
+
+  /* ---------------- EQUIPE ---------------- */
+  function desenharEquipe(){
+    $("e-lista").innerHTML=(D.perfis||[]).map(function(p){
+      var pode=podeGerir() && !ehCriadorPerfil(p) && (ME.papel==="criador" || p.papel==="operador");
+      return '<div class="card"><h3>'+esc(p.nome)+'<span class="tag">'+esc(p.papel.toUpperCase())+'</span>'+(p.ativo?"":'<span class="tag r">INATIVO</span>')+'</h3>'+
+        '<div class="meta">CPF: '+esc(fmtCpf(p.cpf))+'</div>'+
+        (pode?'<div class="acoes"><button class="perigo" data-remover="'+esc(p.cpf)+'">Remover acesso</button></div>':"")+'</div>';
+    }).join("");
+    $("e-papel").parentNode.classList.toggle("hide",ME.papel!=="criador");
+  }
+  function ehCriadorPerfil(p){ return p.papel==="criador"; }
+  $("e-lista").onclick=async function(ev){
+    var b=ev.target.closest("button[data-remover]"); if(!b) return;
+    if(!confirm("Remover o acesso desta pessoa? O login será apagado.")) return;
+    try{ await chamarEquipe({acao:"remover",cpf:b.getAttribute("data-remover")}); await atualizar(); }
+    catch(e){ alert(e.message); }
+  };
+  async function chamarEquipe(corpo){
+    await renovarSeNecessario();
+    var r=await fetch(CFG.url+"/functions/v1/equipe",{method:"POST",headers:{apikey:CFG.key,"Content-Type":"application/json",Authorization:"Bearer "+S.token},body:JSON.stringify(corpo)});
+    var j={}; try{ j=await r.json(); }catch(e){}
+    if(!r.ok||!j.ok) throw new Error(j.erro||"Não foi possível concluir.");
+    return j;
+  }
+  $("e-criar").onclick=async function(){
+    var nome=$("e-nome").value.trim(), cpf=soDig($("e-cpf").value), email=$("e-email").value.trim(), senha=$("e-senha").value, papel=$("e-papel").value;
+    if(!nome){ msg("e-msg","Informe o nome.","er"); return; }
+    if(cpf.length!==11){ msg("e-msg","CPF inválido.","er"); return; }
+    var pessoa=D.pessoas.find(function(p){ return soDig(p.cpf)===cpf; });
+    if(!pessoa || pessoa.tipo!=="prestador"){ msg("e-msg","Esta pessoa precisa estar cadastrada como PRESTADOR antes.","er"); return; }
+    try{
+      msg("e-msg","Criando…","");
+      await chamarEquipe({acao:"criar",nome:nome,cpf:cpf,email:email,senha:senha,papel:papel});
+      msg("e-msg","Acesso criado. Envie o e-mail e a senha provisória para a pessoa.","ok");
+      $("e-senha").value=""; await atualizar();
+    }catch(e){ msg("e-msg",e.message,"er"); }
+  };
+
+  iniciar();
+})();
+</script>
+</body>
+</html>
